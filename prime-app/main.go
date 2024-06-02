@@ -1,12 +1,68 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
 
 func main() {
-	fmt.Println("hello world!")
-	fmt.Println(isPrime(3))
-	fmt.Println(isPrime(30))
+	// Print a welcome message
+	intro()
 
+	// Create a channel to indicate you want to quit
+	doneChan := make(chan bool)
+
+	// start go routine to read user nput
+	go readUserInput(doneChan)
+
+	// block until channel gets a value
+	<-doneChan
+	// close the channel
+	close(doneChan)
+	fmt.Println("bye")
+}
+
+func readUserInput(doneChan chan bool) {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for {
+		res, done := checkNumber(scanner)
+		if done {
+			doneChan <- true
+			return
+		}
+		fmt.Println(res)
+		promt()
+	}
+
+}
+
+func checkNumber(scanner *bufio.Scanner) (string, bool) {
+	scanner.Scan()
+	if strings.EqualFold(scanner.Text(), "q") {
+		return "", true
+	} else {
+		num, err := strconv.Atoi(scanner.Text())
+		if err != nil {
+			return "NaN, please input a number", false
+		} else {
+			_, result := isPrime(num)
+			return result, false
+		}
+
+	}
+}
+
+func intro() {
+	fmt.Println("Hello...")
+	fmt.Println("Enter any number to see if it's prime or not! Press q to quit.")
+	promt()
+}
+func promt() {
+	fmt.Print("-> ")
 }
 
 func isPrime(number int) (bool, string) {
